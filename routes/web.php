@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LandingController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\SuratmasukController;
+use App\Http\Controllers\SuratkeluarController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +21,11 @@ Route::get('/',[LandingController::class,'index']);
 Route::get('/home',[HomeController::class,'index']);
 
 Route::resource('suratmasuks',SuratmasukController::class);
+Route::resource('suratkeluars',SuratkeluarController::class);
 
+Route::get('suratkeluarimport',[SuratkeluarController::class,'import']);
+Route::post('suratkeluarimportproses',[SuratkeluarController::class,'importproses']);
+Route::get('suratkeluarpdf',[SuratkeluarController::class,'exportpdf']);
 Route::get('suratmasukimport',[SuratmasukController::class,'import']);
 Route::post('suratmasukimportproses',[SuratmasukController::class,'importproses']);
 Route::get('suratmasukpdf',[SuratmasukController::class,'exportpdf']);

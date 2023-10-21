@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use PDF;
 use App\Models\Suratkeluar;
 use Illuminate\Http\Request;
-use App\Imports\SuratmasukImport;
+use App\Imports\SuratkeluarImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\Mime\Part\File;
 
@@ -38,15 +38,15 @@ class SuratkeluarController extends Controller
                 'tglsurat' => 'required',
                 'tglkeluar' => 'required',
                 'nosurat' => 'required',
-                'pengirim' => 'required',
+                'tujuan' => 'required',
                 'isi' => 'required',
                 'file' => 'required|mimes:pdf|max:10000',
             ],
             [
                 'tglsurat.required' => 'Kolom Tanggal Surat tidak boleh kosong',
-                'tglmasuk.required' => 'Kolom Tanggal Masuk tidak boleh kosong',
+                'tglkeluar.required' => 'Kolom Tanggal Keluar tidak boleh kosong',
                 'nosurat.required' => 'Kolom No. Surat tidak boleh kosong',
-                'pengirim.required' => 'Kolom Pengirim tidak boleh kosong',
+                'tujuan.required' => 'Kolom tujuan tidak boleh kosong',
                 'isi.required' => 'Kolom Isi Ringkas tidak boleh kosong',
                 'file.required' => 'Silahkan pilih file surat',
                 'file.mimes' => 'Tipe File harus PDF',
@@ -57,14 +57,14 @@ class SuratkeluarController extends Controller
         if ($request->hasFile('file')) {
             $fileSurat = $request->file('file');
             $newName = 'Kuli_IT_Tecno' . date('Ymd') . '.' . rand() . '.' . $fileSurat->getClientOriginalExtension();
-            $fileSurat->move('./suratmasukfile/', $newName);
+            $fileSurat->move('./suratkeluarfile/', $newName);
         }
 
         $simpan = Suratkeluar::create([
             'tgl_surat' => $request->tglsurat,
-            'tgl_masuk' => $request->tglmasuk,
+            'tgl_keluar' => $request->tglkeluar,
             'no_surat' => $request->nosurat,
-            'pengirim' => $request->pengirim,
+            'tujuan' => $request->tujuan,
             'ringkasan' => $request->isi,
             'file_surat' => $newName,
         ]);
@@ -72,8 +72,8 @@ class SuratkeluarController extends Controller
         $simpan->save();
 
         return redirect()
-            ->route('suratmasuks.index')
-            ->with('success', 'Data Surat Masuk sudah berhasil disimpan');
+            ->route('suratkeluars.index')
+            ->with('success', 'Data Surat keluar sudah berhasil disimpan');
     }
 
     /**
@@ -100,17 +100,17 @@ class SuratkeluarController extends Controller
         $request->validate(
             [
                 'tglsurat' => 'required',
-                'tglmasuk' => 'required',
+                'tglkeluar' => 'required',
                 'nosurat' => 'required',
-                'pengirim' => 'required',
+                'tujuan' => 'required',
                 'isi' => 'required',
                 'file' => 'mimes:pdf|max:10000',
             ],
             [
                 'tglsurat.required' => 'Kolom Tanggal Surat tidak boleh kosong',
-                'tglmasuk.required' => 'Kolom Tanggal Masuk tidak boleh kosong',
+                'tglkeluar.required' => 'Kolom Tanggal keluar tidak boleh kosong',
                 'nosurat.required' => 'Kolom No. Surat tidak boleh kosong',
-                'pengirim.required' => 'Kolom Pengirim tidak boleh kosong',
+                'tujuan.required' => 'Kolom tujuan tidak boleh kosong',
                 'isi.required' => 'Kolom Isi Ringkas tidak boleh kosong',
                 'file.required' => 'Silahkan pilih file surat',
                 'file.mimes' => 'Tipe File harus PDF',
@@ -122,15 +122,15 @@ class SuratkeluarController extends Controller
 
         $suratkeluar->no_surat = $request->nosurat;
         $suratkeluar->tgl_surat = $request->tglsurat;
-        $suratkeluar->tgl_masuk = $request->tglmasuk;
-        $suratkeluar->pengirim = $request->pengirim;
+        $suratkeluar->tgl_keluar = $request->tglkeluar;
+        $suratkeluar->tujuan = $request->tujuan;
         $suratkeluar->ringkasan = $request->isi;
 
         if ($filesurat != '') {
             $new_name = 'Kuli_IT_Tecno' . date('Ymd') . '.' . rand() . '.' . $filesurat->extension();
-            $filesurat->move('./suratmasukfile', $new_name);
+            $filesurat->move('./suratkeluarfile', $new_name);
             // Hapus file lama jika ada
-            $oldFilePath = './suratmasukfile/' . $suratkeluar->file_surat;
+            $oldFilePath = './suratkeluarfile/' . $suratkeluar->file_surat;
             if (file_exists($oldFilePath)) {
                 unlink($oldFilePath);
             }
@@ -141,8 +141,8 @@ class SuratkeluarController extends Controller
         $suratkeluar->save();
 
         return redirect()
-            ->route('suratmasuks.index')
-            ->with('success', 'Ubah Surat Masuk sudah berhasil disimpan');
+            ->route('suratkeluars.index')
+            ->with('success', 'Ubah Surat Keluar sudah berhasil disimpan');
     }
 
     /**
@@ -153,8 +153,8 @@ class SuratkeluarController extends Controller
         $suratkeluar->delete();
 
         return redirect()
-            ->route('suratmasuks.index')
-            ->with('success', 'Data Surat Masuk sudah berhasil dihapus');
+            ->route('suratkeluars.index')
+            ->with('success', 'Data Surat Keluar sudah berhasil dihapus');
     }
 
     public function import()
@@ -168,10 +168,10 @@ class SuratkeluarController extends Controller
             'file' => 'required|mimes:csv,xls,xlsx',
         ]);
 
-        Excel::import(new SuratmasukImport(), $request->file('file'));
+        Excel::import(new SuratkeluarImport(), $request->file('file'));
 
         return redirect()
-            ->route('suratmasuks.index')
+            ->route('suratkeluars.index')
             ->with('success', 'Import data berhasil');
     }
 
@@ -179,7 +179,7 @@ class SuratkeluarController extends Controller
     {
         $query = Suratkeluar::all();
 
-        $pdf = PDF::loadview('suratkeluar.suratmasuk_pdf', ['query' => $query]);
+        $pdf = PDF::loadview('suratkeluar.suratkeluar_pdf', ['query' => $query]);
         return $pdf->download('laporan-suratkeluar.pdf');
     }
 }
